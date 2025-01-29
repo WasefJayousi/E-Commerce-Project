@@ -9,7 +9,6 @@ const usersRouter = require('./routes/usersRoutes');
 const productRouter = require('./routes/productsRoutes')
 const cateogryRouter = require('./routes/categoryRoutes')
 const connect = require('./database/DBconnection')
-
 connect.ConnectToMySql()
 
 const app = express();
