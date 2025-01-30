@@ -60,27 +60,36 @@ exports.UpdateProduct = [
         const [Results,fields] = await connection.query(UpdateQuery , [Productname , Quantity , Price , Description , Availability , CategoryID , ProductID])
         return res.status(200).json({message:"Product Updated!" , Results , fields})
 
-    })
-
-]
+    })]
 
 exports.BuyOrder = [
     BuyOrderValidation,
     asynchandler(async(req,res)=>{
         // if the products are in-stock we continue otherwise fail... also when product quantity becomes 0 
-        const Items = req.body
+        const products = req.body
         const UserID = parseInt(req.params.id , 10); // req.params returns as a string , so convert to int Base 10 (decimal numbers)
         const status = "accepted" // depends on the transaction but for now accepted
         const connection = getConnection()
         const [OrderResult,OrderFields] = await connection.query(`INSERT INTO orders (UserID) VALUES (?)` ,[UserID] )
         const OrderID = OrderResult.insertId // same orderID for each entry
-        const add_product_query = `INSERT INTO order_product (OrderID , ProductID , Quantity , Status) VALUES (?,?,?,?)`
-        Items.forEach(async(item) => {
-            const [OrderJunctionResult , OrderJunctionFields] =  await connection.query( add_product_query, [OrderID, item.ProductID , item.Quantity , status]) // for loop?
-            // maybe add here to see execution result finished by order query and then execute the decrement
-            const decrementQunatity =  await connection.query(`UPDATE product Set Quantity = Quantity-? WHERE ProductID = ?` , [item.Quantity , item.ProductID])     
-        });
-        return res.status(201).json({message:"Order Accepted"}) // add another object for -  order select * from order where OrderID = OrderID
-    })
-]
-exports.SearchProduct 
+        const orderitemsdata = products.map((product)=> [
+            OrderID,
+            product.ProductID ,
+            product.Quantity,
+            status
+]) // get every item and return them in a sinle array
+        console.log(orderitemsdata)
+        const add_product_query = `INSERT INTO order_product (OrderID , ProductID , Quantity , Status) VALUES ?`
+        const [OrderJunctionResult , OrderJunctionFields] =  await connection.query( add_product_query,[orderitemsdata]) 
+        //✅ Parallel Execution of Updates – Using Promise.all() ensures all updates run concurrently.
+        //✅ Performance Boost – Instead of sequentially updating each product, all updates happen at once, reducing execution time.
+        await Promise.all(
+            products.map(product => {
+                connection.query(`UPDATE product SET Quantity = Quantity - ? WHERE ProductID = ?`,[product.Quantity, product.ProductID])
+            })
+        ) 
+
+    return res.status(201).json({message:"Order Accepted"}) // add another object for -  order select * from order where OrderID = OrderID
+})]
+exports.SearchProduct // add like instead of = in query?
+
