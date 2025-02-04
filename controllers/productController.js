@@ -1,6 +1,6 @@
 const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
-const { productValidation , BuyOrderValidation} = require("../middlewares/validators/productValidator");
+const { BuyOrderValidation , productValidation} = require("../middlewares/validators/productValidator");
 const { param ,  validationResult} = require('express-validator');
 
 exports.PostProduct = [
@@ -22,8 +22,8 @@ exports.PostProduct = [
                 Availability,
                 CategoryID
             ]);
-            console.log(req.body)
-            return res.status(200).json({ message: `Created successfully` , result:result.insertId});
+            console.log(result , fields)
+            return res.status(200).json({ message: `Created successfully`});
     })
 ];
 
@@ -65,7 +65,7 @@ exports.UpdateProduct = [
 exports.BuyOrder = [
     BuyOrderValidation,
     asynchandler(async(req,res)=>{
-        // if the products are in-stock we continue otherwise fail... also when product quantity becomes 0 
+        // if the products are in-stock we continue otherwise fail... also when product quantity becomes 0
         const products = req.body
         const UserID = parseInt(req.params.id , 10); // req.params returns as a string , so convert to int Base 10 (decimal numbers)
         const status = "accepted" // depends on the transaction but for now accepted
@@ -76,9 +76,7 @@ exports.BuyOrder = [
             OrderID,
             product.ProductID ,
             product.Quantity,
-            status
-]) // get every item and return them in a sinle array
-        console.log(orderitemsdata)
+            status])
         const add_product_query = `INSERT INTO order_product (OrderID , ProductID , Quantity , Status) VALUES ?`
         const [OrderJunctionResult , OrderJunctionFields] =  await connection.query( add_product_query,[orderitemsdata]) 
         //✅ Parallel Execution of Updates – Using Promise.all() ensures all updates run concurrently.
@@ -92,4 +90,5 @@ exports.BuyOrder = [
     return res.status(201).json({message:"Order Accepted"}) // add another object for -  order select * from order where OrderID = OrderID
 })]
 exports.SearchProduct // add like instead of = in query?
+
 
