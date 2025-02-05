@@ -1,8 +1,8 @@
 const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
 const { BuyOrderValidation , productValidation} = require("../middlewares/validators/productValidator");
-const { param ,  validationResult} = require('express-validator');
 
+// Create product
 exports.PostProduct = [
     productValidation,
     asynchandler(async (req, res) => {
@@ -27,6 +27,7 @@ exports.PostProduct = [
     })
 ];
 
+// search product by category
 exports.GetProductsByCategory = asynchandler(async(req,res)=> {
     const CategoryID = parseInt(req.params.id,10)
     if(!CategoryID) {
@@ -47,7 +48,7 @@ exports.GetProductsByCategory = asynchandler(async(req,res)=> {
 })
 
 
-
+// uptdate product
 exports.UpdateProduct = [
     productValidation,
     asynchandler(async(req,res)=> {
@@ -58,37 +59,22 @@ exports.UpdateProduct = [
                              WHERE = ProductID = ? LIMIT 1`
         const connection = getConnection();
         const [Results,fields] = await connection.query(UpdateQuery , [Productname , Quantity , Price , Description , Availability , CategoryID , ProductID])
+        if(Results.affectedRows === 0) {
+            return res.status(200).json({message:"Product Does not Exists!"})
+        }
         return res.status(200).json({message:"Product Updated!" , Results , fields})
-
     })]
+// search any product that matches input
+exports.SearchProduct = asynchandler(async(req,res)=> {
 
-exports.BuyOrder = [
-    BuyOrderValidation,
-    asynchandler(async(req,res)=>{
-        // if the products are in-stock we continue otherwise fail... also when product quantity becomes 0
-        const products = req.body
-        const UserID = parseInt(req.params.id , 10); // req.params returns as a string , so convert to int Base 10 (decimal numbers)
-        const status = "accepted" // depends on the transaction but for now accepted
+        const inputquery = `%${req.query.text}%`
         const connection = getConnection()
-        const [OrderResult,OrderFields] = await connection.query(`INSERT INTO orders (UserID) VALUES (?)` ,[UserID] )
-        const OrderID = OrderResult.insertId // same orderID for each entry
-        const orderitemsdata = products.map((product)=> [
-            OrderID,
-            product.ProductID ,
-            product.Quantity,
-            status])
-        const add_product_query = `INSERT INTO order_product (OrderID , ProductID , Quantity , Status) VALUES ?`
-        const [OrderJunctionResult , OrderJunctionFields] =  await connection.query( add_product_query,[orderitemsdata]) 
-        //✅ Parallel Execution of Updates – Using Promise.all() ensures all updates run concurrently.
-        //✅ Performance Boost – Instead of sequentially updating each product, all updates happen at once, reducing execution time.
-        await Promise.all(
-            products.map(product => {
-                connection.query(`UPDATE product SET Quantity = Quantity - ? WHERE ProductID = ?`,[product.Quantity, product.ProductID])
-            })
-        ) 
+        const query = `SELECT * FROM product WHERE productName LIKE ?`;
+        const [results , fields] = await connection.query(query , [inputquery] )
+        return res.status(200).json({products:results})    
+})
 
-    return res.status(201).json({message:"Order Accepted"}) // add another object for -  order select * from order where OrderID = OrderID
-})]
-exports.SearchProduct // add like instead of = in query?
+
+
 
 

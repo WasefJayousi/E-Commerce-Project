@@ -19,7 +19,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-const server = http.createServer(app , ()=>{console.log(`listening on http://127.0.0.1:3000`)});
+const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.

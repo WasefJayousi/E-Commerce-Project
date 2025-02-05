@@ -9,9 +9,7 @@ router.post("/NewProduct" ,ProductController.PostProduct) // Post New Product By
 
 router.put("/Update/:id" , ProductController.UpdateProduct) // Update multiple data in the product By Company(Admin or employee) Router
 
-router.post("/Order/:id" , ProductController.BuyOrder) // Buy Product Router , ID of User
-
-router.get("") // Search Router
+router.get("/Search" , ProductController.SearchProduct) // Search Router
 
 
 
