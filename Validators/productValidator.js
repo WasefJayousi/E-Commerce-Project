@@ -1,6 +1,6 @@
 const {body , validationResult} = require("express-validator")
 const asynchandler = require("express-async-handler");
-const {getConnection} = require("../../database/DBconnection");
+const {getConnection} = require("../database/DBconnection");
 
 //
 exports.productValidation = [

@@ -1,15 +1,17 @@
 const express = require("express")
-const ProductController = require("../controllers/productController")
 const router = express.Router()
+const ProductController = require("../controllers/productController")
+const {isAdmin} = require("../middleware/authenticationRole")
+const passport = require("passport")
 
 
-router.get("/Category/:id" , ProductController.GetProductsByCategory ) // Get all Categories Router
+router.get("/SearchProductByCategory/:id" , ProductController.GetProductsByCategory ) // Get Products by a category
 
-router.post("/NewProduct" ,ProductController.PostProduct) // Post New Product By Company(Admin or employee) Router
+router.get("/SearchProduct" , ProductController.SearchProduct) // Search Router
 
-router.put("/Update/:id" , ProductController.UpdateProduct) // Update multiple data in the product By Company(Admin or employee) Router
+router.post("/NewProduct" ,passport.authenticate('jwt',{session:false}),isAdmin,ProductController.PostProduct) // Post New Product By Company(Admin or employee) Router
 
-router.get("/Search" , ProductController.SearchProduct) // Search Router
+router.put("/Update/:id" ,passport.authenticate('jwt',{session:false}),isAdmin, ProductController.UpdateProduct) // Update multiple data in the product By Company(Admin or employee) Router
 
 
 

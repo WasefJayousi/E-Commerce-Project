@@ -1,6 +1,6 @@
 const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
-const { BuyOrderValidation , productValidation} = require("../middlewares/validators/productValidator");
+const {productValidation} = require("../Validators/productValidator");
 
 // Create product
 exports.PostProduct = [
@@ -60,14 +60,13 @@ exports.UpdateProduct = [
         const connection = getConnection();
         const [Results,fields] = await connection.query(UpdateQuery , [Productname , Quantity , Price , Description , Availability , CategoryID , ProductID])
         if(Results.affectedRows === 0) {
-            return res.status(200).json({message:"Product Does not Exists!"})
+            return res.status(200).json({message:"Product Does not Exist!"})
         }
         return res.status(200).json({message:"Product Updated!" , Results , fields})
     })]
 // search any product that matches input
 exports.SearchProduct = asynchandler(async(req,res)=> {
-
-        const inputquery = `%${req.query.text}%`
+        const inputquery = `%${req.query.text}%`.trim()
         const connection = getConnection()
         const query = `SELECT * FROM product WHERE productName LIKE ?`;
         const [results , fields] = await connection.query(query , [inputquery] )

@@ -1,13 +1,10 @@
 const express = require("express")
 const router = express.Router();
 const orderController = require("../controllers/orderController")
+const passport = require("passport")
 
-router.post("/Buy/:id" , orderController.BuyOrder) // Buy Product Router , ID of User
+router.post("/Buy/:id" , passport.authenticate('jwt',{session:false}),orderController.BuyOrder) // Buy Product Router , ID of User
 
-router.get("/History/:id" , orderController.History) // get past or current orders for user
-
-router.get("/:id" , ) // get orders for the user (id:number)
-
-router.post("/Create" , )
+router.get("/History" ,passport.authenticate('jwt',{session:false}), orderController.History) // get past or current orders for user
 
 module.exports = router
