@@ -71,6 +71,7 @@ exports.Login =[LoginValidation , asynchandler(async (req,res) => {
     }
     const accessToken = jwt.sign(UserPayload,SECRET_KEY , {expiresIn:'1h'})
     const refreshToken = jwt.sign(UserPayload,process.env.JWT_SECRET_REFRESH_KEY , {expiresIn:'7d'})
+    req.user = "" // for security?
     return res.status(200).json({message:"Login successful" , accessToken , refreshToken})
 })]
 

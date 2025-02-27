@@ -62,7 +62,7 @@ exports.EmailUpdate = asynchandler(async (req,res) => {
     })
 })
 
-
+// maybe change to one query only?
 exports.updatename = asynchandler(async (req,res) => {
     const connection = getConnection()
     const UserID = req.user.id

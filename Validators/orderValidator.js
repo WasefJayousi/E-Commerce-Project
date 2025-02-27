@@ -3,9 +3,9 @@ const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
 
 exports.BuyOrderValidation = asynchandler(async (req, res , next) => {
-    const products = req.body;
-    const connection = getConnection();
-
+    const products = req.body
+    if(!Array.isArray(products)) return res.status(422).json({error:"data should be array"})  //invalid data 422 status code
+    const connection = getConnection()
         for (let index = 0; index < products.length; index++) {
             const product = products[index];
 
