@@ -9,4 +9,8 @@ router.post('/EmailUpdate' ,passport.authenticate('jwt',{session:false}), userCo
 
 router.put('/Updatename' ,passport.authenticate('jwt',{session:false}), userController.updatename)
 
+router.post('/PasswordChangeVerify' ,passport.authenticate('jwt',{session:false}), userController.ForgetPasswordVerification)
+
+router.post('/PasswordUpdate' ,passport.authenticate('jwt',{session:false}), userController.PasswordUpdate)
+
 module.exports = router

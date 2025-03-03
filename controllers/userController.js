@@ -39,7 +39,7 @@ exports.EmailUpdateVerification = asynchandler(async (req,res) => {
         <p>${VerificationToken}</p>
         <p>If you did not request this, please ignore this email.</p>`
         await sendEmail(Email,subject,"",html)
-        res.status(200).json({messagee:`Verification Email sent to ${Email}`})
+        res.status(200).json({message:`Verification Email sent to ${Email}`})
 })
 
 exports.EmailUpdate = asynchandler(async (req,res) => {
@@ -83,4 +83,62 @@ exports.updatename = asynchandler(async (req,res) => {
     else {
         return res.status(400).json({error:"values to change not provided!"})
     }
+})
+
+
+// password reset for in profile
+exports.ForgetPasswordVerification = asynchandler(async (req,res) => {
+    const Email = req.body.Email
+    if(!Email) return res.status(400).json({error:"email not provided"})
+    const connection = getConnection()
+    const [EmailExist,fields] = connection.query("SELECT UserID,Email FROM `user` WHERE Email = ?" , [Email])
+    if(!EmailExist) return res.status(404).json({error:"Email Does not exist"})
+    const VerificationToken = jwt.sign({Email},process.env.JWT_SECRET_Password_KEY , {expiresIn:'1h'})
+    const subject = "Password Verification"
+    const html = `<style>
+      body {
+          font-family: 'Arial', sans-serif;
+          margin: 20px;
+          text-align: center;
+      }
+  
+      h1 {
+          color: #333;
+      }
+  
+      p {
+          color: #555;
+          line-height: 1.5;
+          margin-bottom: 10px;
+      } 
+      .Do8Zj{
+        align-item: center !importent;
+        </style>
+    
+    <h1>Change Password Verification , Valid for 1 Hour</h1>
+    <p>Click or Get the Token below to Verify email.</p>
+    <p>${VerificationToken}</p>
+    <p>If you did not request this, please ignore this email.</p>`
+    await sendEmail(Email,subject,"",html)
+    return res.status(200).json({message:`Verification Email sent to ${Email}`})
+})
+
+exports.PasswordUpdate = asynchandler(async (req,res) => {
+const token = req.body.token
+if(!token) {
+    return res.status(400).json({error:"token empty!"})
+}
+jwt.verify(token , process.env.JWT_SECRET_Password_KEY , async(err,decoded)=>
+{
+    if(err)
+    return res.status(400).json({err:err.message})
+    else {
+        const connection = getConnection()
+        const email =  decoded.Email
+        const UserID = decoded.UserID
+        const UpdateEmailQuery = "UPDATE `user` set Email = ? where UserID = ?"
+        await connection.query(UpdateEmailQuery , [email,UserID])
+        return res.status(201).json({message:"Email Updated Successfuly"})
+    }
+})
 })

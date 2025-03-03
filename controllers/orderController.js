@@ -34,7 +34,6 @@ exports.PlaceOrder = asynchandler(async(req,res)=>{
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentID)
         if(paymentIntent.status !== "succeeded") return res.status(400).json({message:"transaction not successful"}) // setup webhook later to retreive payment_intent status to check for payment success
         const alreadypayed = await stripe.paymentIntents.confirm(paymentIntentID,{payment_method: 'pm_card_visa',});
-        if(alreadypayed.message === "You cannot confirm this PaymentIntent because it has already succeeded after being previously confirmed") return res.status(400).json({message:"this order has already been payed and placed"})
         const paymentmethodID = paymentIntent.payment_method
         const payment_method_details = await stripe.paymentMethods.retrieve(paymentmethodID)//from payment intent get the card details to get the payment_method to insert in database
         const payment_method = payment_method_details.type //+ "/" + payment_method_details.brand  gets the type(card,link,amazon) and the brand (visa,mastercard,etc)

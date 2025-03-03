@@ -64,12 +64,20 @@ exports.UpdateProduct = [
         }
         return res.status(200).json({message:"Product Updated!" , Results , fields})
     })]
+// apply best practices : https://planetscale.com/blog/mysql-pagination
+// complete later..
 // search any product that matches input
+// pagnation , get index from query or param and then multiply it by the limit of retrievable product in sql
 exports.SearchProduct = asynchandler(async(req,res)=> {
         const inputquery = `%${req.query.text}%`.trim()
+        const indexpage = `%${req.query.index}%`.trim()
+        if(!inputquery) {return res.status(400).json({message:"no search query!"})}
+        if(isNaN(indexpage)) {return res.status(400).json({message:"no search query!"})}
+        const limit = 10;
+        const offset = (indexpage * limit) - 10
         const connection = getConnection()
-        const query = `SELECT * FROM product WHERE productName LIKE ?`;
-        const [results , fields] = await connection.query(query , [inputquery] )
+        const query = `SELECT * FROM product WHERE productName LIKE ? LIMIT ? OFFSET ?`;
+        const [results , fields] = await connection.query(query , [inputquery , limit , offset] )
         return res.status(200).json({products:results})    
 })
 

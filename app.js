@@ -40,9 +40,9 @@ app.use(function(req, res, next) {
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
-  res.status(err.status || 500).json({
+  res.status(err.raw.statusCode||err.status || 500).json({
     message: err.message || "Internal Server Error",
-    status: err.status || 500,})
+    status: err.raw.statusCode||err.status || 500,})
     console.log(err)
 });
 console.log(`listening on http://127.0.0.1:3000`)
