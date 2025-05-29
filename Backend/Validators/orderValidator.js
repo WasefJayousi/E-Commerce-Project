@@ -2,12 +2,13 @@ const {body , validationResult} = require("express-validator")
 const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
 
-exports.BuyOrderValidation = asynchandler(async (req, res , next) => {
+exports.AddOrderValidation = asynchandler(async (req, res , next) => {
     const products = req.body
     if(!Array.isArray(products)) return res.status(422).json({error:"data should be array"})  //invalid data 422 status code
     const connection = getConnection()
         for (let index = 0; index < products.length; index++) {
             const product = products[index];
+            console.log(product)
 
             // Validate ProductID
             if (isNaN(product.ProductID) || !product.ProductID) {
@@ -20,7 +21,7 @@ exports.BuyOrderValidation = asynchandler(async (req, res , next) => {
             }
 
             const ProductID = product.ProductID;
-            const [check, fields] = await connection.query(`SELECT Availability ,Quantity FROM product WHERE ProductID = ?`, [ProductID]);
+            const [check] = await connection.query(`SELECT Availability ,Quantity , Productname FROM product WHERE ProductID = ?`, [ProductID]);
 
             // Check if product exists
             if (check.length === 0) {
@@ -39,9 +40,10 @@ exports.BuyOrderValidation = asynchandler(async (req, res , next) => {
                 continue
             }
             else {
-                return res.status(400).json({ message: "Product Chosen Quantity Exceeds Available Quantity!", ProductID: ProductID });
+                return res.status(400).json({ message: `Product Chosen Quantity Exceeds Available Quantity: ${check[0].Productname} `, ProductID: ProductID });
             }
         }
         // Next MiddleWare
         next() 
 })
+

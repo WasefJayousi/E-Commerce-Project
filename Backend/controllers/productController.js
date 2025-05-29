@@ -27,6 +27,32 @@ exports.PostProduct = [
     })
 ];
 
+exports.HomePageProducts = asynchandler(async (req,res) => {
+    const connection = getConnection() // database connection
+     const products = await connection.query(
+    "SELECT ProductID, Productname, Price , CategoryID FROM product ORDER BY RAND() LIMIT 8"
+  );
+  return res.status(200).json(products[0]);
+})
+
+exports.RelatedProducts = asynchandler(async (req,res) => {
+  const CategoryID = req.params.id
+  const connection = getConnection() // database connection
+  const products = await connection.query(`SELECT ProductID, Productname, Price FROM product Where CategoryID = ? ORDER BY RAND() LIMIT 4` , [CategoryID]);
+  return res.status(200).json(products[0]);
+})
+
+exports.ViewProduct = asynchandler(async (req,res) => {
+    const ProductID = parseInt(req.params.id,10) || parseInt(req.body.id ,10)
+    if(!ProductID) return res.status(404).json({error:"ProductID required!"})
+    const connection = getConnection()
+    const [product] = await connection.query(`SELECT * FROM product WHERE ProductID = ?` , [ProductID])
+      if (!product) {
+    return res.status(404).json({ message: 'Product not found' });
+  }
+    return res.status(200).json({product:product[0]})
+})
+
 // search product by category
 exports.GetProductsByCategory = asynchandler(async(req,res)=> {
     const CategoryID = parseInt(req.params.id,10)
@@ -68,9 +94,10 @@ exports.UpdateProduct = [
 // complete later..
 // search any product that matches input
 // pagnation , get index from query or param and then multiply it by the limit of retrievable product in sql
+// apply defered join pagnation
 exports.SearchProduct = asynchandler(async(req,res)=> {
         const inputquery = `%${req.query.text}%`.trim()
-        const indexpage = `%${req.query.index}%`.trim()
+        const indexpage = Number(`%${req.query.index}%`.trim())
         if(!inputquery) {return res.status(400).json({message:"no search query!"})}
         if(isNaN(indexpage)) {return res.status(400).json({message:"no search query!"})}
         const limit = 10;

@@ -86,12 +86,12 @@ exports.updatename = asynchandler(async (req,res) => {
 })
 
 
-// password reset for in profile
+// password reset
 exports.ForgetPasswordVerification = asynchandler(async (req,res) => {
     const Email = req.body.Email
     if(!Email) return res.status(400).json({error:"email not provided"})
     const connection = getConnection()
-    const [EmailExist,fields] = connection.query("SELECT UserID,Email FROM `user` WHERE Email = ?" , [Email])
+    const [EmailExist,fields] = await connection.query("SELECT UserID,Email FROM `user` WHERE Email = ?" , [Email])
     if(!EmailExist) return res.status(404).json({error:"Email Does not exist"})
     const VerificationToken = jwt.sign({Email},process.env.JWT_SECRET_Password_KEY , {expiresIn:'1h'})
     const subject = "Password Verification"
@@ -125,20 +125,19 @@ exports.ForgetPasswordVerification = asynchandler(async (req,res) => {
 
 exports.PasswordUpdate = asynchandler(async (req,res) => {
 const token = req.body.token
-if(!token) {
-    return res.status(400).json({error:"token empty!"})
-}
+const newPassword = req.body.Password || req.body.Password
+if(!token) return res.status(400).json({error:"token empty!"})
+if(!newPassword) return res.status(400).json({error:"new password needed!"})
 jwt.verify(token , process.env.JWT_SECRET_Password_KEY , async(err,decoded)=>
-{
+   {
     if(err)
     return res.status(400).json({err:err.message})
     else {
         const connection = getConnection()
-        const email =  decoded.Email
         const UserID = decoded.UserID
-        const UpdateEmailQuery = "UPDATE `user` set Email = ? where UserID = ?"
-        await connection.query(UpdateEmailQuery , [email,UserID])
-        return res.status(201).json({message:"Email Updated Successfuly"})
+        const UpdateEmailQuery = "UPDATE `user` set Password = ? where UserID = ?"
+        await connection.query(UpdateEmailQuery , [newPassword,UserID])
+        return res.status(201).json({message:"Password Updated Successfuly"})
     }
-})
+  })
 })

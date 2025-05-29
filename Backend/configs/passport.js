@@ -14,7 +14,7 @@ module.exports = passport => {
         const connection = getConnection()
         const payload = jwt_payload.id
         const query = "SELECT UserID ,Firstname , Lastname , Gender , Role , JoinDate , Email FROM `user` WHERE UserID = ?" // Userid and role only for now
-        const [user,fields] = await connection.query(query , [payload]);
+        const [user] = await connection.query(query , [payload]);
         const User = {id:user[0].UserID ,firstname:user[0].Firstname,lastname:user[0].Lastname,Gender:user[0].Gender, role:user[0].Role , joindate:user[0].JoinDate , email:user[0].Email}
         if (user) {
           return done(null,User);

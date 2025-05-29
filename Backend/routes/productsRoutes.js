@@ -9,6 +9,12 @@ router.get("/SearchProductByCategory/:id" , ProductController.GetProductsByCateg
 
 router.get("/SearchProduct" , ProductController.SearchProduct) // Search Router
 
+router.get("/HomePageProduct" , ProductController.HomePageProducts)
+
+router.get("/RelatedProducts/:id" , ProductController.RelatedProducts)
+
+router.get("/Viewproduct/:id" , ProductController.ViewProduct)
+
 router.post("/NewProduct" ,passport.authenticate('jwt',{session:false}),isAdmin,ProductController.PostProduct) // Post New Product By Company(Admin or employee) Router
 
 router.put("/Update/:id" ,passport.authenticate('jwt',{session:false}),isAdmin, ProductController.UpdateProduct) // Update multiple data in the product By Company(Admin or employee) Router

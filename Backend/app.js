@@ -2,6 +2,8 @@ const createError = require('http-errors');
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const bodyParser = require("body-parser");
 require('dotenv').config(); // using .env through process.env
 
 //Routers
@@ -11,6 +13,8 @@ const orderRouter = require('./routes/ordersRoutes')
 const authRouter = require('./routes/AuthenticationRoutes')
 const userRouter = require('./routes/userRoutes')
 const passport = require('passport')
+const webhooks = require('./middleware/webhookstripe')
+const {corsOptions} = require('./middleware/cors')
 require('./configs/passport')(passport)
 
 //Database connection
@@ -19,9 +23,11 @@ connect.ConnectToMySql()
 
 const app = express(); // express app (The actual Code Server)
 
-app.use(express.json());
+app.post('/stripe/webhook',bodyParser.raw({type: "application/json"}),webhooks.VerifyOrder)
+
+app.use(cors(corsOptions))
+app.use(express.json())
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(passport.initialize());
 
 
@@ -38,12 +44,18 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.status(err.raw.statusCode||err.status || 500).json({
-    message: err.message || "Internal Server Error",
-    status: err.raw.statusCode||err.status || 500,})
-    console.log(err)
+app.use(function (err, req, res, next) {
+  res.locals.message = err.message;
+
+  // Set locals for development use
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // Log full stack trace
+  console.error('❌ Error Stack:', err.stack);
+
+  // Respond with full error if in development
+  return res.status(err.status || 500).json({error: err.message});
 });
-console.log(`listening on http://127.0.0.1:3000`)
+
+
 module.exports = app;

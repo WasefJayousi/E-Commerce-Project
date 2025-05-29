@@ -69,7 +69,7 @@ exports.Login =[LoginValidation , asynchandler(async (req,res) => {
     if(!validpassword) {
         return res.status(401).json({error:"Email or Password is Invalid!"})
     }
-    const accessToken = jwt.sign(UserPayload,SECRET_KEY , {expiresIn:'1h'})
+    const accessToken = jwt.sign(UserPayload,SECRET_KEY , {expiresIn:'5h'})
     const refreshToken = jwt.sign(UserPayload,process.env.JWT_SECRET_REFRESH_KEY , {expiresIn:'7d'})
     req.user = "" // for security?
     return res.status(200).json({message:"Login successful" , accessToken , refreshToken})
