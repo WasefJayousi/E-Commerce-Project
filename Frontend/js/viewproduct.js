@@ -1,8 +1,8 @@
 import { addToCart } from './cartUtils.js';      
-      
+
+let userToken = localStorage.getItem('userToken') || '';
 document.addEventListener('DOMContentLoaded', function () {
         const params = new URLSearchParams(window.location.search);
-const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoid2ZhcmlkQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJiJDExJFNqSWVFNDBRaS41WXl1WWhQUWUvSE9odXdITWlvOUk2ZXR0YWJ0R2U2bUYzZkhweC5XUDVPIiwicm9sZSI6IkN1c3RvbWVyIiwiaWF0IjoxNzQ4NTI3NzM2LCJleHAiOjE3NDg1NDU3MzZ9.xJP-LffbQscdEvU6ywcHUKZ-SqGEf2Yx2lrTKcSbdNk';
         const ProductID = params.get('productid');
 
         if (!ProductID) {
@@ -31,6 +31,7 @@ const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoi
           });
 
         document.getElementById('addToCartBtn').addEventListener('click', () => {
+          if(!userToken) return alert("You must log in first!")
           const Quantity = parseInt(document.getElementById('inputQuantity').value, 10);
           console.log(`Add to cart: ProductID=${ProductID}, Quantity=${Quantity}`);
           addToCart({ProductID,Quantity} , userToken)
@@ -45,7 +46,7 @@ const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoi
     card.className = 'col mb-5';
     card.innerHTML = `
       <div class="card h-100">
-        <a href="viewproduct.html?productid=${product.ProductID}">
+        <a href="viewproduct.html?productid=${product.ProductID}&categoryid=${product.CategoryID}">
           <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="${product.Productname}" />
         </a>
         <div class="card-body p-4">
@@ -70,6 +71,7 @@ const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoi
 
   document.querySelectorAll('.add-to-cart-btn').forEach(button => {
     button.addEventListener('click', function (e) {
+      if(!userToken) return alert("You must log in first!")
       e.preventDefault();
       const ProductID = this.dataset.productid;
       const Quantity = parseInt(this.dataset.quantity, 10);

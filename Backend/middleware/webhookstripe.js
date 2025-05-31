@@ -31,7 +31,7 @@ const VerifyOrder = async(req,res)=>{
         const [OrderResult] = await connection.query('SELECT ProductID , Quantity FROM order_product WHERE OrderID = ?' , [OrderID])
         const items = OrderResult
         // add here to check if product not available
-        await connection.query(`UPDATE orders SET Status = ? , PaymentMethod = ? , ShipmentID = ? , paymentintentID = ? WHERE UserID = ? and OrderID = ?` ,[status,payment_method,ShipmentResult.insertId,paymentIntent.id,UserID,OrderID] ) // Update status and payment_metho
+        await connection.query(`UPDATE orders SET Status = ? , PaymentMethod = ? , ShipmentID = ? WHERE UserID = ? and OrderID = ?` ,[status,payment_method,ShipmentResult.insertId,UserID,OrderID] ) // Update status and payment_metho
 
         //✅ Parallel Execution of Updates – Using Promise.all() ensures all updates run concurrently.
         //✅ Performance Boost – Instead of sequentially updating each product, all updates happen at once, reducing execution time.

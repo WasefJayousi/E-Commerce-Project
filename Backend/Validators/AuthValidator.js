@@ -13,12 +13,13 @@ exports.RegisterValidation = [
     }),
     body("Firstname").trim().isLength({min:4}).withMessage("first name required and minimum length is 4 characteres!").escape(),
     body("Lastname").trim().isLength({min:4}).withMessage("first name required and minimum length is 4 characteres!").escape(),
-    body("Gender").trim().isLength({min:1 , max:1}).withMessage("Gender Required , min 1 and max 1 number").escape(),
+    body("Gender").trim().isLength({min:1}).withMessage("Gender Required").escape(),
     body("Password").trim().isStrongPassword({minLength:8,minLowercase:1,minUppercase:1,minSymbols:1}).withMessage("Password must be 8 Characters long , 1 min upper case , 1 min lowercase and 1 Specical character").escape(),
     asyncHandler(async (req,res,next) => {
         const result = validationResult(req)
         if(!result.isEmpty()) {
-            return res.status(404).json({errors:result.array()})
+            console.log(result.array())
+            return res.status(400).json({errors:result.array()})
         }
         next()
     })
@@ -43,7 +44,7 @@ exports.LoginValidation = [
     asyncHandler(async (req,res,next) => {
         const result = validationResult(req)
         if(!result.isEmpty()) {
-            return res.status(404).json({errors:result.array()})
+            return res.status(400).json({errors:result.array()})
         }
         next()
     })

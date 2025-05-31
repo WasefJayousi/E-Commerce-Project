@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+  <div id="main-header"></div>
+
+  <div class="container mt-5">
+    <h2 class="text-center">Admin Dashboard</h2>
+
+    <div class="row">
+      <!-- Post Product -->
+      <div class="col-md-6">
+        <h4>Post New Product</h4>
+        <form id="postProductForm">
+          <input type="text" class="form-control mb-2" placeholder="Product Name" name="Productname" required />
+          <input type="number" class="form-control mb-2" placeholder="Quantity" name="Quantity" required />
+          <input type="number" step="0.01" class="form-control mb-2" placeholder="Price" name="Price" required />
+          <textarea class="form-control mb-2" placeholder="Description" name="Description"></textarea>
+          <input type="text" class="form-control mb-2" placeholder="Availability" name="Availability" required />
+          <input type="number" class="form-control mb-2" placeholder="Category ID" name="CategoryID" required />
+          <input type="file" class="form-control mb-3" name="img" />
+          <button class="btn btn-primary" type="submit">Post Product</button>
+        </form>
+      </div>
+
+      <!-- Update Product -->
+      <div class="col-md-6">
+        <h4>Update Existing Product</h4>
+        <form id="updateProductForm">
+          <input type="number" class="form-control mb-2" placeholder="Product ID" name="ProductID" required />
+          <input type="text" class="form-control mb-2" placeholder="Product Name" name="Productname" />
+          <input type="number" class="form-control mb-2" placeholder="Quantity" name="Quantity" />
+          <input type="number" step="0.01" class="form-control mb-2" placeholder="Price" name="Price" />
+          <textarea class="form-control mb-2" placeholder="Description" name="Description"></textarea>
+          <input type="text" class="form-control mb-2" placeholder="Availability" name="Availability" />
+          <input type="number" class="form-control mb-2" placeholder="Category ID" name="CategoryID" />
+          <button class="btn btn-warning" type="submit">Update Product</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-footer"></div>
+
+  <script src="js/master.js"></script>
+  <script src="js/Admin.js"></script>
+</body>
+</html>

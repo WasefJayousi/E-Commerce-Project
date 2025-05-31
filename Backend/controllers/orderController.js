@@ -25,11 +25,14 @@ exports.Checkout = [AddOrderValidation,asynchandler(async (req,res) => {
     
     const [result] = await connection.query(Total_amount_query , values)
     const total_amount = Number(result[0].Total_amount) + 5 // 5 for shipment cost
-
     const [OrderResult] = await connection.query(`INSERT INTO orders (UserID , PaymentMethod , status) VALUES (?,?,?)` ,[UserID,payment_method,status])
-    const OrderID = OrderResult.insertId // same orderID for each entry
-    const add_order_query = `INSERT INTO order_product (OrderID, ProductID, Quantity, Status) VALUES (?, ?, ?, ?)`
-    await connection.query(add_order_query, [OrderID,items[0].ProductID , items[0].Quantity, status])
+    const OrderID = OrderResult.insertId
+    await Promise.all(
+      items.map(async product=>{
+    const add_order_query = `INSERT INTO order_product (OrderID, ProductID, Quantity) VALUES (?, ?, ?)`
+    connection.query(add_order_query, [OrderID,product.ProductID , product.Quantity])
+      })
+    )
 
     const paymentIntent = await stripe.paymentIntents.create({
         amount:total_amount * 100, //You can change your account to process transactions in jod by adding a bank account for this currency at https://dashboard.stripe.com/account
@@ -38,8 +41,8 @@ exports.Checkout = [AddOrderValidation,asynchandler(async (req,res) => {
             userID: req.user.id,
             OrderID:OrderID
         }
-    })// payment intent creation
-    console.log(paymentIntent.client_secret)
+    })
+    connection.query(`UPDATE orders SET StripeClientSecret = ? , paymentintentID = ? WHERE OrderID = ? and UserID = ?` , [paymentIntent.client_secret,paymentIntent.id,OrderID,UserID])
     return res.status(200).json({message:"Payment intent created succesfully" , client_secret :paymentIntent.client_secret} , ) 
   } 
 )]
@@ -48,16 +51,17 @@ exports.Checkout = [AddOrderValidation,asynchandler(async (req,res) => {
 exports.CancelOrder = asynchandler(async (req,res) => {
   const OrderID = req.params.orderid
   const UserID = req.user.id
-  const connection = getConnection()
+  const connection = getConnection()  
   const [OrderResult] = await connection.query('SELECT UserID , paymentintentID FROM orders WHERE OrderID = ?' , [OrderID])
-
+  console.log(OrderResult)
   if(OrderResult[0].UserID === UserID) {
-    const paymentIntent = await stripe.paymentIntents.cancel(OrderResult[0].PaymentIntentID);
-    const [result] = await connection('DELETE FROM order_product WHERE OrderID = ?' , [OrderID]) 
+    const paymentIntent = await stripe.paymentIntents.cancel(OrderResult[0].paymentintentID);
+
+    const [result] = await connection.query('DELETE FROM order_product WHERE OrderID = ?' , [OrderID]) 
     if(result.affectedRows === 0) {
       return res.status(410).json({error:"Order not found"})
     }
-    await connection('DELETE FROM orders WHERE OrderID = ?' , [OrderID])   // placed here incase its already deleted and no need to do the query!
+    await connection.query('DELETE FROM orders WHERE OrderID = ?' , [OrderID])   // placed here incase its already deleted and no need to do the query!
     return res.status(201).json({message:"Order Deleted Successfully" , paymentIntent})
   } 
   else {
@@ -132,23 +136,24 @@ exports.clearcart = asynchandler(async (req,res) => {
 exports.History = asynchandler(async (req,res) => {
 
     const UserID = req.user.id
-    const status = req.body
+    const status = req.query.status
     const connection = getConnection();
-    if(status === "in-CheckOut") {
-    const OrderHistory = `SELECT o.OrderID , p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , op.Status , op.PaymentMethod FROM orders o 
+    if(status.toLowerCase() === "unpaid") {
+    const OrderHistory = `SELECT o.OrderID,o.StripeClientSecret , p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , o.Status , o.PaymentMethod FROM orders o 
                                                JOIN order_product op ON op.OrderID = o.OrderID
                                                JOIN product p ON p.ProductID = op.ProductID
-                                               WHERE o.UserID = ? and o.Status = in-CheckOut;`
+                                               WHERE o.UserID = ? and o.Status = "unpaid";`
     const [ordersesults] = await connection.query( OrderHistory, [UserID])
     return res.status(200).json({orders:ordersesults})
     } else {
-    const OrderHistory = `SELECT o.OrderID , p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , op.Status , op.PaymentMethod FROM orders o 
+    const OrderHistory = `SELECT o.OrderID ,o.ShipmentID, p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , op.ShipmentStatus , o.PaymentMethod FROM orders o 
                                                JOIN order_product op ON op.OrderID = o.OrderID
-                                               JOIN Shipment s ON s.ShipmentID = op.ShipmentID
+                                               JOIN Shipment s ON s.ShipmentID = o.ShipmentID
                                                JOIN Address a ON a.AddressID = s.AddressID
                                                JOIN product p ON p.ProductID = op.ProductID
-                                               WHERE o.UserID = ? and and o.Status = paid;`
+                                               WHERE o.UserID = ? and o.Status = "paid";`
     const [ordersesults] = await connection.query( OrderHistory, [UserID])
+    console.log(ordersesults)
     return res.status(200).json({orders:ordersesults})                                           
     } 
-})
+})  

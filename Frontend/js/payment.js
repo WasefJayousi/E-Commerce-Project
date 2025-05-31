@@ -3,6 +3,7 @@ const stripe = Stripe('pk_test_51QuugqDhafaV9LChjmXKepEh6DmOF57hWQD7jt2N8ZAfFzzy
 
 document.addEventListener('DOMContentLoaded', async () => {
   const clientSecret = localStorage.getItem('stripe_client_secret');
+  console.log(clientSecret)
 
   if (!clientSecret) {
     document.getElementById('payment-message').textContent = 'Missing payment info.';
@@ -19,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: 'http://localhost:5500/payment-success.html'
+        return_url: 'http://localhost:5500/FrontEnd/paymentsuccess.html'
       }
     });
 

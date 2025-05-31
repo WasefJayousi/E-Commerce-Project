@@ -18,5 +18,5 @@ export function addToCart(item, userToken) {
     })
       .then(res => res.json())
       .then(data => {console.log('Added to cart:', data) , alert(data.message)})
-      .catch(err => console.error('Cart error:', err));
+      .catch(err => {console.error('Cart error:', err)});
   }

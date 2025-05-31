@@ -1,6 +1,6 @@
 // js/user-orders.js
 
-const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoid2ZhcmlkQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJiJDExJFNqSWVFNDBRaS41WXl1WWhQUWUvSE9odXdITWlvOUk2ZXR0YWJ0R2U2bUYzZkhweC5XUDVPIiwicm9sZSI6IkN1c3RvbWVyIiwiaWF0IjoxNzQ4NTI3NzM2LCJleHAiOjE3NDg1NDU3MzZ9.xJP-LffbQscdEvU6ywcHUKZ-SqGEf2Yx2lrTKcSbdNk';
+let userToken = localStorage.getItem('userToken') || '';
 const shipmentPrice = 5.00;
 
 function formatCurrency(amount) {
@@ -22,7 +22,7 @@ function ClearCart() {
 }
 
 function renderOrders(items) {
-  const product = items.cartresult
+  const products = items.cartresult
   const container = document.getElementById('order-items-container');
   container.innerHTML = '';
 
@@ -31,7 +31,7 @@ function renderOrders(items) {
     return;
   }
 
-  product.forEach(item => {
+  products.forEach(item => {
     const card = document.createElement('div');
     card.className = 'col-12 mb-4';
 
@@ -61,7 +61,7 @@ function renderOrders(items) {
       <button class="btn btn-primary" id="payNowBtn">Proceed to Pay</button>
     </div>
   `;
-
+console.log(products)
 document.getElementById('payNowBtn').addEventListener('click', () => {
   fetch('http://localhost:3000/Orders/Create-Checkout-Paymentintent', {
     method: 'POST',
@@ -69,7 +69,7 @@ document.getElementById('payNowBtn').addEventListener('click', () => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${userToken}`
     },
-    body: JSON.stringify(items.cartresult)
+    body: JSON.stringify(products)
   })
     .then(async res => {
       const data = await res.json();
@@ -85,7 +85,7 @@ document.getElementById('payNowBtn').addEventListener('click', () => {
       console.log('Order placed:', data);
 
       const clientSecret = data.client_secret; // ✅ make sure backend sends this
-
+      console.log()
       if (!clientSecret) {
         alert('Missing clientSecret from server.');
         return;

@@ -10,11 +10,11 @@ import { addToCart } from './cartUtils.js';
 document.addEventListener('DOMContentLoaded', function () {
   
 
-  let isLoggedIn = false; // Simulated auth state
-  let userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoid2ZhcmlkQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJiJDExJFNqSWVFNDBRaS41WXl1WWhQUWUvSE9odXdITWlvOUk2ZXR0YWJ0R2U2bUYzZkhweC5XUDVPIiwicm9sZSI6IkN1c3RvbWVyIiwiaWF0IjoxNzQ4NTI3NzM2LCJleHAiOjE3NDg1NDU3MzZ9.xJP-LffbQscdEvU6ywcHUKZ-SqGEf2Yx2lrTKcSbdNk'; // Placeholder for user JWT token
+let isLoggedIn = false; // Simulated auth state
+let userToken = localStorage.getItem('userToken') || '';
 
 
-  
+
 function renderProducts(products) {
   const productContainer = document.querySelector('.row-cols-2');
   productContainer.innerHTML = '';
@@ -48,12 +48,15 @@ function renderProducts(products) {
   });
 
   document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+
     button.addEventListener('click', function (e) {
+      if(!userToken) return alert("user must be loggedin")
       e.preventDefault();
       const ProductID = this.dataset.productid;
       const Quantity = parseInt(this.dataset.quantity, 10);
       addToCart({ ProductID, Quantity } , userToken);
     });
+
   });
 }
 

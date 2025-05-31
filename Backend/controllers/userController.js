@@ -2,13 +2,20 @@ const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
 const {sendEmail} = require("../utils/emailutils")
 const jwt = require("jsonwebtoken")
+const bcrypt = require('bcrypt');
+const {body , validationResult} = require("express-validator")
 
-
+exports.GetUserInfo = asynchandler(async (req,res) => {
+    const UserID = req.user.id
+    const connection = getConnection()
+    const [UserInfo] = await connection.query(`SELECT Email , Firstname , Lastname , Gender , Role , JoinDate FROM user WHERE UserID = ?` , [UserID])
+    return res.status(200).json({UserInfo:UserInfo})
+})
 exports.EmailUpdateVerification = asynchandler(async (req,res) => {
         const Email = req.body.Email
         const connection = getConnection()
         const [results] = await connection.query("SELECT Email FROM `user` WHERE Email = ?" , [Email])
-        if(results) {
+        if(results.length !== 0) {
             return res.status(400).json({error:"Email already in use!"})
         }
         if(!Email) return res.status(400).json({error:"email not provided"})
@@ -117,15 +124,23 @@ exports.ForgetPasswordVerification = asynchandler(async (req,res) => {
     
     <h1>Change Password Verification , Valid for 1 Hour</h1>
     <p>Click or Get the Token below to Verify email.</p>
-    <p>${VerificationToken}</p>
+    <a href="http://localhost:5500/Frontend/resetpassword.html?token=${VerificationToken}" class="verify-btn">Reset Password</a>
     <p>If you did not request this, please ignore this email.</p>`
     await sendEmail(Email,subject,"",html)
     return res.status(200).json({message:`Verification Email sent to ${Email}`})
 })
 
-exports.PasswordUpdate = asynchandler(async (req,res) => {
-const token = req.body.token
-const newPassword = req.body.Password || req.body.Password
+exports.PasswordUpdate = [
+body("Password").trim().isStrongPassword({minLength:8,minLowercase:1,minUppercase:1,minSymbols:1}).withMessage("Password must be 8 Characters long , 1 min upper case , 1 min lowercase and 1 Specical character").escape(),
+asynchandler(async (req,res) => {
+            const result = validationResult(req)
+            if(!result.isEmpty()) {
+                console.log(result.array())
+                return res.status(400).json({errors:result.array()})
+            }
+const token = req.body.token || req.query.token
+const newPassword = req.body.Password
+const HashedPassword = await bcrypt.hash(newPassword,10)
 if(!token) return res.status(400).json({error:"token empty!"})
 if(!newPassword) return res.status(400).json({error:"new password needed!"})
 jwt.verify(token , process.env.JWT_SECRET_Password_KEY , async(err,decoded)=>
@@ -133,11 +148,12 @@ jwt.verify(token , process.env.JWT_SECRET_Password_KEY , async(err,decoded)=>
     if(err)
     return res.status(400).json({err:err.message})
     else {
+        console.log(decoded)
         const connection = getConnection()
-        const UserID = decoded.UserID
-        const UpdateEmailQuery = "UPDATE `user` set Password = ? where UserID = ?"
-        await connection.query(UpdateEmailQuery , [newPassword,UserID])
+        const Email = decoded.Email
+        const UpdateEmailQuery = "UPDATE `user` set Password = ? where Email = ?"
+        await connection.query(UpdateEmailQuery , [HashedPassword,Email])
         return res.status(201).json({message:"Password Updated Successfuly"})
     }
   })
-})
+})]

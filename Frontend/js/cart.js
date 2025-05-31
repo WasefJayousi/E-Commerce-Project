@@ -1,7 +1,7 @@
 // js/cart.js
 
 // Simulated JWT token (replace with actual user auth logic)
-const userToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjIsImVtYWlsIjoid2ZhcmlkQGdtYWlsLmNvbSIsInBhc3N3b3JkIjoiJDJiJDExJFNqSWVFNDBRaS41WXl1WWhQUWUvSE9odXdITWlvOUk2ZXR0YWJ0R2U2bUYzZkhweC5XUDVPIiwicm9sZSI6IkN1c3RvbWVyIiwiaWF0IjoxNzQ4NTI3NzM2LCJleHAiOjE3NDg1NDU3MzZ9.xJP-LffbQscdEvU6ywcHUKZ-SqGEf2Yx2lrTKcSbdNk';
+let userToken = localStorage.getItem('userToken') || '';
 let currentCartItems = [];
 function formatCurrency(amount) {
   return `$${parseFloat(amount).toFixed(2)}`;
@@ -119,5 +119,6 @@ function fetchCartItems() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  if(!userToken) return alert("Log in first to view cart items!")
   fetchCartItems();
 });

@@ -12,6 +12,7 @@ exports.productValidation = [
     body("CategoryID" , "Empty or not Numeric input for CategoryID").isLength({min:1}).withMessage("Cannot be Empty").isNumeric().withMessage("Not Numeric"),// maybe CategoryID does not exist validation?
     asynchandler(async(req,res,next)=>{
         const connection = getConnection()
+        console.log(req.body)
         const productname = req.body.Productname 
         // get product name
         const query = "SELECT 1 FROM product WHERE Productname = ? LIMIT 1";
@@ -20,7 +21,7 @@ exports.productValidation = [
         if(ProductExists.length > 0) {return res.status(404).json({errormessage:"Product Already Exists"})}
         const result = validationResult(req)
         if(!result.isEmpty()) {
-            return res.status(404).json({errors:result.array()})
+            return res.status(400).json({errors:result.array()})
         }
         next()
     })
