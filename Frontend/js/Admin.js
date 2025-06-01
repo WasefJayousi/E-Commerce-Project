@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       try {
-        const res = await fetch(`http://localhost:3000/Products/UpdateProduct/${ProductID}`, {
+        const res = await fetch(`http://localhost:3000/Products/Update/${ProductID}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -65,11 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const data = await res.json();
-        alert(data.message || data.error);
+        console.log(data.errors[0].msg)
+        alert(data.message || data.error || data.errors[0].msg);
         if (res.ok) updateForm.reset();
       } catch (err) {
-        alert('Failed to update product.');
-        console.error(err);
+        alert('Product already exists');
       }
     });
   }
