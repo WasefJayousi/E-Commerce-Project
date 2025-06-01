@@ -27,7 +27,7 @@ const VerifyOrder = async(req,res)=>{
         const paymentInentID = event.data.object.paymentInentID
 
         const connection = getConnection()
-        const [ShipmentResult] = await connection.query('INSERT INTO Shipment (UserID,AddressID) VALUES (?,?)' , [UserID,1])
+        const [ShipmentResult] = await connection.query('INSERT INTO Shipment (UserID,AddressID) VALUES (?,?)' , [UserID,9]) //address is hardcoded!
         const [OrderResult] = await connection.query('SELECT ProductID , Quantity FROM order_product WHERE OrderID = ?' , [OrderID])
         const items = OrderResult
         // add here to check if product not available

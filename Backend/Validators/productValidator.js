@@ -18,9 +18,10 @@ exports.productValidation = [
         const query = "SELECT 1 FROM product WHERE Productname = ? LIMIT 1";
         const [ProductExists] = await connection.query(query , [productname])
         // check if name already exists in database
-        if(ProductExists.length > 0) {return res.status(404).json({errormessage:"Product Already Exists"})}
+        if(ProductExists.length > 0) {return res.status(400).json({message:"Product Already Exists"})}
         const result = validationResult(req)
         if(!result.isEmpty()) {
+            console.log(result.array())
             return res.status(400).json({errors:result.array()})
         }
         next()

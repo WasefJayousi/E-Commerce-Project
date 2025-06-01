@@ -24,7 +24,7 @@ exports.Checkout = [AddOrderValidation,asynchandler(async (req,res) => {
   `; // single query execution for acquiring total_amount for selected user products (instead of for loop)
     
     const [result] = await connection.query(Total_amount_query , values)
-    const total_amount = Number(result[0].Total_amount) + 5 // 5 for shipment cost
+    const total_amount = parseInt(Number(result[0].Total_amount) + 5,10) // 5 for shipment cost
     const [OrderResult] = await connection.query(`INSERT INTO orders (UserID , PaymentMethod , status) VALUES (?,?,?)` ,[UserID,payment_method,status])
     const OrderID = OrderResult.insertId
     await Promise.all(
@@ -33,7 +33,6 @@ exports.Checkout = [AddOrderValidation,asynchandler(async (req,res) => {
     connection.query(add_order_query, [OrderID,product.ProductID , product.Quantity])
       })
     )
-
     const paymentIntent = await stripe.paymentIntents.create({
         amount:total_amount * 100, //You can change your account to process transactions in jod by adding a bank account for this currency at https://dashboard.stripe.com/account
         currency:'usd', // usd for now
@@ -139,14 +138,15 @@ exports.History = asynchandler(async (req,res) => {
     const status = req.query.status
     const connection = getConnection();
     if(status.toLowerCase() === "unpaid") {
-    const OrderHistory = `SELECT o.OrderID,o.StripeClientSecret , p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , o.Status , o.PaymentMethod FROM orders o 
+    const OrderHistory = `SELECT o.OrderID,o.Status,o.StripeClientSecret , p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , o.Status , o.PaymentMethod FROM orders o 
                                                JOIN order_product op ON op.OrderID = o.OrderID
                                                JOIN product p ON p.ProductID = op.ProductID
                                                WHERE o.UserID = ? and o.Status = "unpaid";`
     const [ordersesults] = await connection.query( OrderHistory, [UserID])
+    console.log(ordersesults)
     return res.status(200).json({orders:ordersesults})
     } else {
-    const OrderHistory = `SELECT o.OrderID ,o.ShipmentID, p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , op.ShipmentStatus , o.PaymentMethod FROM orders o 
+    const OrderHistory = `SELECT o.OrderID , o.Status ,o.ShipmentID, p.Productname , DATE_FORMAT(o.OrderDate , "%Y-%M-%D %r")Date , op.Quantity , p.Price , op.ShipmentStatus , o.PaymentMethod FROM orders o 
                                                JOIN order_product op ON op.OrderID = o.OrderID
                                                JOIN Shipment s ON s.ShipmentID = o.ShipmentID
                                                JOIN Address a ON a.AddressID = s.AddressID

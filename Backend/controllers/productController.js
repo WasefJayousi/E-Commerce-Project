@@ -1,19 +1,17 @@
 const asynchandler = require("express-async-handler");
 const {getConnection} = require("../database/DBconnection");
 const {productValidation} = require("../Validators/productValidator");
-const { upload } = require('../configs/multer');
 
 // Create product
 exports.PostProduct = [
     productValidation,
-    upload.fields([{name:'img' , maxCount:1}]),
     asynchandler(async (req, res) => {
-        const { Productname, Quantity, Price, Description, Availability, CategoryID , img} = req.body;
+        const { Productname, Quantity, Price, Description, Availability, CategoryID , img } = req.body;
 
         // Safely construct the SQL query using placeholders
         const insertQuery = `
             INSERT INTO product (Productname, Quantity, Price, Description, Availability, CategoryID , img) 
-            VALUES (?, ?, ?, ?, ?, ? , ?)
+            VALUES (?, ?, ?, ?, ?, ? ,?)
         `;
             const connection = getConnection(); // Ensure this is called
             const [result,fields] = await connection.query(insertQuery, [
@@ -23,9 +21,8 @@ exports.PostProduct = [
                 Description,
                 Availability,
                 CategoryID,
-                img
+                img,
             ]);
-            console.log(result , fields)
             return res.status(200).json({ message: `Created successfully`});
     })
 ];
@@ -85,14 +82,18 @@ exports.UpdateProduct = [
         const { Productname, Quantity, Price, Description, Availability, CategoryID} = req.body;
         const UpdateQuery = `UPDATE product 
                              SET Productname = ? , Quantity = ? , Price = ?, Description = ? , Availability = ? , CategoryID = ?
-                             WHERE = ProductID = ? LIMIT 1`
+                             WHERE ProductID = ? 
+                             LIMIT 1`
         const connection = getConnection();
+        console.log("in work")
         const [Results,fields] = await connection.query(UpdateQuery , [Productname , Quantity , Price , Description , Availability , CategoryID , ProductID])
         if(Results.affectedRows === 0) {
             return res.status(200).json({message:"Product Does not Exist!"})
         }
+        console.log("updated!")
         return res.status(200).json({message:"Product Updated!" , Results , fields})
     })]
+
 // apply best practices : https://planetscale.com/blog/mysql-pagination
 // complete later..
 // search any product that matches input

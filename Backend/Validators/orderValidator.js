@@ -31,9 +31,9 @@ exports.AddOrderValidation = asynchandler(async (req, res , next) => {
             const AvailableQuantity = check[0].Quantity;
             const DBAvailability = check[0].Availability
             const UserChosenQuantity = product.Quantity;
-
+            console.log(DBAvailability)
             // Check if available quantity is sufficient
-            if(DBAvailability !== "in Stock") {
+            if(DBAvailability !== "In Stock") {
                 return res.status(404).json({message:"Product not in Stock!" , ProductID : ProductID})
             }
             if (AvailableQuantity >= UserChosenQuantity) {
